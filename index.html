@@ -177,7 +177,33 @@
 
         <button id="hit" class="primary">HIT THE BALL</button>
         <p id="status" role="status">Ready for your first shot!</p>
-      </section>
+      </section> 
+      
+<section class="panel">
+  <h2>Golf Bag — 14 Clubs</h2>
+
+  <label for="clubSelect">Choose Your Club</label>
+  <select id="clubSelect">
+    <option value="Driver">1. Driver</option>
+    <option value="3 Wood">2. 3 Wood</option>
+    <option value="5 Wood">3. 5 Wood</option>
+    <option value="4 Hybrid">4. 4 Hybrid</option>
+    <option value="5 Iron">5. 5 Iron</option>
+    <option value="6 Iron">6. 6 Iron</option>
+    <option value="7 Iron">7. 7 Iron</option>
+    <option value="8 Iron">8. 8 Iron</option>
+    <option value="9 Iron">9. 9 Iron</option>
+    <option value="Pitching Wedge">10. Pitching Wedge</option>
+    <option value="Gap Wedge">11. Gap Wedge</option>
+    <option value="Sand Wedge">12. Sand Wedge</option>
+    <option value="Lob Wedge">13. Lob Wedge</option>
+    <option value="Putter">14. Putter</option>
+  </select>
+
+  <p>Selected Club: <strong id="clubName">Driver</strong></p>
+  <p>Estimated Distance: <strong id="clubDistance">220–270 m</strong></p>
+</section>
+
 
       <section class="panel">
         <h2>Game View</h2>
@@ -390,7 +416,38 @@
         Number(document.getElementById("aim").value)
       );
 
-      const speed = power * 0.32;
+      
+const club = document.getElementById("clubSelect").value;
+
+const clubSettings = {
+  "Driver": { speed: 1.00, distance: "220–270 m" },
+  "3 Wood": { speed: 0.88, distance: "200–230 m" },
+  "5 Wood": { speed: 0.80, distance: "180–210 m" },
+  "4 Hybrid": { speed: 0.74, distance: "170–195 m" },
+  "5 Iron": { speed: 0.68, distance: "160–185 m" },
+  "6 Iron": { speed: 0.63, distance: "150–175 m" },
+  "7 Iron": { speed: 0.58, distance: "135–160 m" },
+  "8 Iron": { speed: 0.53, distance: "120–145 m" },
+  "9 Iron": { speed: 0.48, distance: "105–130 m" },
+  "Pitching Wedge": { speed: 0.42, distance: "85–115 m" },
+  "Gap Wedge": { speed: 0.36, distance: "70–100 m" },
+  "Sand Wedge": { speed: 0.30, distance: "50–85 m" },
+  "Lob Wedge": { speed: 0.24, distance: "30–65 m" },
+  "Putter": { speed: 0.10, distance: "Putting green" }
+};
+
+const speed = power * 0.32 * clubSettings[club].speed;
+document.getElementById("clubName").textContent = club;
+document.getElementById("clubDistance").textContent =
+  clubSettings[club].distance;
+
+document.getElementById("clubSelect").addEventListener("change", () => {
+  const selectedClub = document.getElementById("clubSelect").value;
+  document.getElementById("clubName").textContent = selectedClub;
+  document.getElementById("clubDistance").textContent =
+    clubSettings[selectedClub].distance;
+});
+
 
       velocity.set(
         Math.sin(aim) * speed,
