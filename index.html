@@ -4,187 +4,510 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fantasy Golf Tournament</title>
+  <title>Golf Challenge 3D</title>
   <style>
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f3f6f1;
-      color: #183c2b;
+      background: #10291f;
+      color: white;
     }
+
     header {
-      background: #123c2b;
-      color: white;
-      padding: 28px 20px;
+      padding: 16px 20px;
+      background: #143b2a;
+      border-bottom: 1px solid #42664d;
     }
-    header h1 { margin: 0 0 8px; }
-    header p { margin: 0; color: #d7e7d9; }
-    main { max-width: 1000px; margin: auto; padding: 22px; }
-    .summary {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 22px;
+
+    header h1 { margin: 0 0 5px; font-size: 23px; }
+    header p { margin: 0; color: #c3d7c7; font-size: 13px; }
+
+    main {
+      max-width: 1100px;
+      margin: auto;
+      padding: 14px;
     }
-    .panel, .golfer {
-      background: white;
-      padding: 18px;
+
+    #game {
+      height: min(58vh, 480px);
+      min-height: 300px;
+      position: relative;
+      overflow: hidden;
+      background: #8bb9cc;
       border-radius: 14px;
-      border: 1px solid #e0e8df;
+      border: 1px solid #527b5d;
     }
-    .number { font-size: 28px; font-weight: bold; margin-top: 8px; }
-    .golfers {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 14px;
-    }
-    .golfer h3 { margin: 8px 0; }
-    .muted { color: #66766b; font-size: 14px; }
-    .price { font-weight: bold; color: #98721c; }
-    button {
+
+    #game canvas {
+      display: block;
       width: 100%;
-      border: 0;
-      padding: 11px;
-      border-radius: 8px;
-      background: #17643f;
-      color: white;
-      cursor: pointer;
-      font-weight: bold;
-      margin-top: 12px;
+      height: 100%;
     }
-    button:disabled { background: #9ca9a0; cursor: not-allowed; }
-    .selected { border: 2px solid #23955c; }
-    .notice { margin: 16px 0; min-height: 22px; }
-    .team-list { line-height: 1.9; }
-    @media (max-width: 550px) {
-      .summary { grid-template-columns: 1fr; }
-      main { padding: 14px; }
+
+    #hud {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .pill {
+      background: rgba(13, 38, 26, 0.88);
+      padding: 9px 12px;
+      border-radius: 9px;
+      font-size: 13px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .panel {
+      padding: 16px;
+      border-radius: 12px;
+      background: #1a3b2b;
+      border: 1px solid #355941;
+      min-width: 0;
+    }
+
+    .panel h2 { margin: 0 0 14px; font-size: 17px; }
+
+    .value {
+      float: right;
+      color: #f1d67a;
+      font-weight: bold;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: #e2c765;
+      margin: 14px 0;
+    }
+
+    button {
+      padding: 12px;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .primary {
+      background: #e2c765;
+      color: #173322;
+      width: 100%;
+    }
+
+    .secondary {
+      background: #315b42;
+      color: white;
+      border: 1px solid #557a60;
+    }
+
+    .camera-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .camera-buttons button { flex: 1; }
+
+    #status {
+      color: #f1d67a;
+      line-height: 1.5;
+      min-height: 24px;
+      margin: 12px 0 0;
+    }
+
+    .note {
+      color: #bfd1c3;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 600px) {
+      .controls { grid-template-columns: 1fr; }
+      #game { height: 52vh; min-height: 280px; }
+      header h1 { font-size: 20px; }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>⛳ Fantasy Golf</h1>
-    <p>Build your dream team. Manage your budget. Score points.</p>
+    <h1>⛳ Golf Challenge 3D</h1>
+    <p>Your golf game. Your challenge.</p>
   </header>
 
   <main>
-    <h2>My Fantasy Team</h2>
-    <p class="muted">Select up to 5 golfers within your 100-credit budget.</p>
-
-    <section class="summary">
-      <div class="panel">
-        <div class="muted">Golfers Selected</div>
-        <div class="number" id="count">0 / 5</div>
+    <div id="game">
+      <div id="hud">
+        <div class="pill">HOLE 1 · PAR 3</div>
+        <div class="pill">Strokes: <strong id="strokes">0</strong></div>
       </div>
-      <div class="panel">
-        <div class="muted">Credits Remaining</div>
-        <div class="number" id="budget">100</div>
-      </div>
-      <div class="panel">
-        <div class="muted">Demo Fantasy Points</div>
-        <div class="number" id="points">0</div>
-      </div>
-    </section>
-
-    <h2>Choose Your Golfers</h2>
-    <p class="muted">Illustrative prices and points only—not live tournament data.</p>
-    <div class="golfers" id="golfers"></div>
-
-    <div class="panel" style="margin-top:22px">
-      <h2>My Team Selection</h2>
-      <div id="team" class="team-list">No golfers selected yet.</div>
-      <button id="reset">Reset Team</button>
+      <div id="loading" style="padding:24px">Loading 3D golf course...</div>
     </div>
-    <p id="notice" class="notice" role="status"></p>
+
+    <div class="controls">
+      <section class="panel">
+        <h2>Shot Control</h2>
+
+        <label for="power">
+          Shot power <span class="value" id="powerValue">85%</span>
+        </label>
+        <input id="power" type="range" min="10" max="100" value="85">
+
+        <label for="aim">
+          Aim left / right <span class="value" id="aimValue">0°</span>
+        </label>
+        <input id="aim" type="range" min="-25" max="25" value="0">
+
+        <button id="hit" class="primary">HIT THE BALL</button>
+        <p id="status" role="status">Ready for your first shot!</p>
+      </section>
+
+      <section class="panel">
+        <h2>Game View</h2>
+        <div class="camera-buttons">
+          <button id="behind" class="secondary">Behind Ball</button>
+          <button id="top" class="secondary">Top View</button>
+        </div>
+
+        <button id="reset" class="secondary"
+          style="width:100%; margin-top:12px">Restart Hole</button>
+
+        <p class="note">
+          Adjust power and aim, then hit the ball toward the flag.
+          Stop the ball inside the cup to complete the hole.
+        </p>
+        <p class="note">
+          Prototype physics and scoring. No real tournament data.
+        </p>
+      </section>
+    </div>
   </main>
 
-  <script>
-    const golfers = [
-      { name: "Scottie Scheffler", price: 30, points: 25 },
-      { name: "Rory McIlroy", price: 28, points: 22 },
-      { name: "Jon Rahm", price: 24, points: 18 },
-      { name: "Collin Morikawa", price: 20, points: 16 },
-      { name: "Tommy Fleetwood", price: 18, points: 15 },
-      { name: "Hideki Matsuyama", price: 17, points: 14 },
-      { name: "Justin Rose", price: 15, points: 12 },
-      { name: "Viktor Hovland", price: 22, points: 19 }
-    ];
+  <script type="module">
+    import * as THREE from
+      "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
-    const selected = new Set();
-    const LIMIT = 100;
-    const MAX_PLAYERS = 5;
+    const game = document.getElementById("game");
+    const loading = document.getElementById("loading");
+    const status = document.getElementById("status");
+    const hitButton = document.getElementById("hit");
 
-    const moneyUsed = () =>
-      golfers.filter(g => selected.has(g.name))
-        .reduce((sum, g) => sum + g.price, 0);
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x9bc9dd);
+    scene.fog = new THREE.Fog(0x9bc9dd, 45, 100);
 
-    const totalPoints = () =>
-      golfers.filter(g => selected.has(g.name))
-        .reduce((sum, g) => sum + g.points, 0);
+    const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 150);
 
-    function render() {
-      document.getElementById("count").textContent =
-        `${selected.size} / ${MAX_PLAYERS}`;
-      document.getElementById("budget").textContent =
-        LIMIT - moneyUsed();
-      document.getElementById("points").textContent = totalPoints();
-
-      document.getElementById("golfers").innerHTML = golfers.map(g => {
-        const isSelected = selected.has(g.name);
-        const cannotAdd =
-          !isSelected &&
-          (selected.size >= MAX_PLAYERS ||
-           moneyUsed() + g.price > LIMIT);
-
-        return `
-          <article class="golfer ${isSelected ? "selected" : ""}">
-            <div class="muted">PRO GOLFER</div>
-            <h3>${g.name}</h3>
-            <p class="price">${g.price} credits</p>
-            <p>Demo points: ${g.points}</p>
-            <button data-name="${g.name}" ${cannotAdd ? "disabled" : ""}>
-              ${isSelected ? "Remove Golfer" : "Select Golfer"}
-            </button>
-          </article>`;
-      }).join("");
-
-      document.getElementById("team").innerHTML =
-        selected.size
-          ? golfers.filter(g => selected.has(g.name))
-              .map(g => `${g.name} — ${g.price} credits`).join("<br>")
-          : "No golfers selected yet.";
-
-      document.querySelectorAll("[data-name]").forEach(button => {
-        button.addEventListener("click", () => {
-          const name = button.dataset.name;
-          const golfer = golfers.find(g => g.name === name);
-
-          if (selected.has(name)) {
-            selected.delete(name);
-            document.getElementById("notice").textContent =
-              `${name} removed from your team.`;
-          } else if (selected.size < MAX_PLAYERS &&
-                     moneyUsed() + golfer.price <= LIMIT) {
-            selected.add(name);
-            document.getElementById("notice").textContent =
-              `${name} added to your team.`;
-          }
-
-          render();
-        });
-      });
-    }
-
-    document.getElementById("reset").addEventListener("click", () => {
-      selected.clear();
-      document.getElementById("notice").textContent =
-        "Your team has been reset.";
-      render();
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      powerPreference: "default"
     });
 
-    render();
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    game.appendChild(renderer.domElement);
+    loading.remove();
+
+    scene.add(new THREE.HemisphereLight(0xe2f5ff, 0x34532d, 2));
+
+    const sunlight = new THREE.DirectionalLight(0xfff0d0, 2.5);
+    sunlight.position.set(-12, 24, 10);
+    sunlight.castShadow = true;
+    sunlight.shadow.mapSize.set(1024, 1024);
+    scene.add(sunlight);
+
+    function material(color, roughness = 1) {
+      return new THREE.MeshStandardMaterial({ color, roughness });
+    }
+
+    function box(w, h, d, x, y, z, color) {
+      const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(w, h, d),
+        material(color)
+      );
+      mesh.position.set(x, y, z);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      scene.add(mesh);
+      return mesh;
+    }
+
+    // Ground and fairway
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(100, 100),
+      material(0x4b8c43)
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.12;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    const fairway = new THREE.Mesh(
+      new THREE.PlaneGeometry(17, 54),
+      material(0x78b957)
+    );
+    fairway.rotation.x = -Math.PI / 2;
+    fairway.position.set(0, -0.09, -12);
+    fairway.receiveShadow = true;
+    scene.add(fairway);
+
+    const green = new THREE.Mesh(
+      new THREE.CircleGeometry(6, 48),
+      material(0x9bd66b)
+    );
+    green.rotation.x = -Math.PI / 2;
+    green.position.set(0, -0.065, -15);
+    green.receiveShadow = true;
+    scene.add(green);
+
+    // Simple decorative trees
+    for (let i = 0; i < 20; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const z = -36 + i * 2.7;
+      const x = side * (12 + (i % 3) * 2);
+
+      const trunk = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.18, 0.26, 2.1, 7),
+        material(0x76502f)
+      );
+      trunk.position.set(x, 0.95, z);
+      trunk.castShadow = true;
+      scene.add(trunk);
+
+      const crown = new THREE.Mesh(
+        new THREE.SphereGeometry(1.35, 9, 7),
+        material(i % 2 ? 0x276b39 : 0x367e40)
+      );
+      crown.position.set(x, 2.8, z);
+      crown.scale.y = 1.2;
+      crown.castShadow = true;
+      scene.add(crown);
+    }
+
+    // Cup
+    const hole = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.48, 0.48, 0.025, 32),
+      material(0x17201b)
+    );
+    hole.position.set(0, -0.035, -15);
+    scene.add(hole);
+
+    // Flag pole and flag
+    const pole = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.045, 0.045, 3.4, 8),
+      material(0xf4f0df)
+    );
+    pole.position.set(0, 1.65, -15);
+    scene.add(pole);
+
+    const flag = new THREE.Mesh(
+      new THREE.BufferGeometry(),
+      new THREE.MeshBasicMaterial({
+        color: 0xe84d45,
+        side: THREE.DoubleSide
+      })
+    );
+    const flagVertices = new Float32Array([
+      0, 3.25, 0,
+      1.25, 2.85, 0,
+      0, 2.45, 0
+    ]);
+    flag.geometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(flagVertices, 3)
+    );
+    flag.geometry.computeVertexNormals();
+    flag.position.set(0, 0, -15);
+    scene.add(flag);
+
+    // Golf ball
+    const ball = new THREE.Mesh(
+      new THREE.SphereGeometry(0.23, 24, 16),
+      new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.38
+      })
+    );
+    ball.castShadow = true;
+    scene.add(ball);
+
+    const startPosition = new THREE.Vector3(0, 0.23, 8);
+    const holePosition = new THREE.Vector3(0, 0, -15);
+    const velocity = new THREE.Vector3();
+
+    let strokes = 0;
+    let moving = false;
+    let completed = false;
+    let cameraMode = "behind";
+    let lastTime = performance.now();
+
+    function resetHole() {
+      ball.position.copy(startPosition);
+      ball.rotation.set(0, 0, 0);
+      velocity.set(0, 0, 0);
+      strokes = 0;
+      moving = false;
+      completed = false;
+      hitButton.disabled = false;
+      document.getElementById("strokes").textContent = strokes;
+      status.textContent = "Ready for your first shot!";
+    }
+
+    document.getElementById("power").addEventListener("input", e => {
+      document.getElementById("powerValue").textContent =
+        e.target.value + "%";
+    });
+
+    document.getElementById("aim").addEventListener("input", e => {
+      document.getElementById("aimValue").textContent =
+        e.target.value + "°";
+    });
+
+    hitButton.addEventListener("click", () => {
+      if (moving || completed) return;
+
+      const power = Number(document.getElementById("power").value);
+      const aim = THREE.MathUtils.degToRad(
+        Number(document.getElementById("aim").value)
+      );
+
+      const speed = power * 0.32;
+
+      velocity.set(
+        Math.sin(aim) * speed,
+        0,
+        -Math.cos(aim) * speed
+      );
+
+      moving = true;
+      strokes++;
+      document.getElementById("strokes").textContent = strokes;
+      hitButton.disabled = true;
+      status.textContent = "Ball in motion...";
+    });
+
+    document.getElementById("behind").addEventListener("click", () => {
+      cameraMode = "behind";
+    });
+
+    document.getElementById("top").addEventListener("click", () => {
+      cameraMode = "top";
+    });
+
+    document.getElementById("reset").addEventListener("click", resetHole);
+
+    function updateCamera() {
+      if (cameraMode === "behind") {
+        const desired = new THREE.Vector3(
+          ball.position.x,
+          ball.position.y + 5.5,
+          ball.position.z + 9
+        );
+        camera.position.lerp(desired, 0.08);
+
+        camera.lookAt(
+          ball.position.x,
+          0,
+          ball.position.z - 5
+        );
+      } else {
+        const desired = new THREE.Vector3(0, 32, 2);
+        camera.position.lerp(desired, 0.08);
+        camera.lookAt(0, 0, -7);
+      }
+    }
+
+    function animate(now) {
+      requestAnimationFrame(animate);
+
+      const dt = Math.min((now - lastTime) / 1000, 0.04);
+      lastTime = now;
+
+      if (moving) {
+        ball.position.x += velocity.x * dt;
+        ball.position.z += velocity.z * dt;
+
+        ball.rotation.x += velocity.z * dt / 0.23;
+        ball.rotation.z -= velocity.x * dt / 0.23;
+
+        // Friction slows the ball on the flat course
+        const friction = Math.exp(-0.85 * dt);
+        velocity.multiplyScalar(friction);
+
+        const distance = Math.hypot(
+          ball.position.x - holePosition.x,
+          ball.position.z - holePosition.z
+        );
+
+        const speed = velocity.length();
+
+        if (distance < 0.48 && speed < 3.5) {
+          ball.position.set(0, 0.23, -15);
+          velocity.set(0, 0, 0);
+          moving = false;
+          completed = true;
+          hitButton.disabled = true;
+
+          const result = strokes === 1 ? "HOLE IN ONE!" :
+            strokes === 2 ? "BIRDIE!" :
+            strokes === 3 ? "PAR!" :
+            strokes === 4 ? "BOGEY!" : "HOLE COMPLETED!";
+
+          status.textContent = `${result} Total strokes: ${strokes}`;
+        } else if (speed < 0.18) {
+          velocity.set(0, 0, 0);
+          moving = false;
+          hitButton.disabled = false;
+          status.textContent = "Ball stopped. Prepare your next shot.";
+        } else {
+          status.textContent = "Ball in motion...";
+        }
+
+        // Keep the ball on the course in this first prototype
+        ball.position.x = THREE.MathUtils.clamp(
+          ball.position.x, -35, 35
+        );
+        ball.position.z = THREE.MathUtils.clamp(
+          ball.position.z, -45, 40
+        );
+      }
+
+      updateCamera();
+      renderer.render(scene, camera);
+    }
+
+    function resize() {
+      const width = game.clientWidth;
+      const height = game.clientHeight;
+
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height, false);
+    }
+
+    new ResizeObserver(resize).observe(game);
+    resize();
+    resetHole();
+    requestAnimationFrame(animate);
   </script>
 </body>
 </html>
