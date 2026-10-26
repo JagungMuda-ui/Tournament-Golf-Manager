@@ -296,6 +296,30 @@
     fairway.receiveShadow = true;
     scene.add(fairway);
 
+ // Fairway mowing stripes
+ const stripeColors = [0x72b957, 0x83c965];
+ const stripeCount = 9;
+ const stripeWidth = 17 / stripeCount;
+
+ for (let i = 0; i < stripeCount; i++) {
+   const stripe = new THREE.Mesh(
+     new THREE.PlaneGeometry(stripeWidth, 54),
+     new THREE.MeshStandardMaterial({
+       color: stripeColors[i % stripeColors.length],
+       roughness: 1
+     })
+   );
+
+   stripe.rotation.x = -Math.PI / 2;
+   stripe.position.set(
+     -8.5 + stripeWidth * (i + 0.5),
+     -0.075,
+     -12
+   );
+   stripe.receiveShadow = true;
+   scene.add(stripe);
+ }
+
     const green = new THREE.Mesh(
       new THREE.CircleGeometry(6, 48),
       material(0x9bd66b)
