@@ -329,6 +329,28 @@
     green.receiveShadow = true;
     scene.add(green);
 
+ // Sand bunkers beside the green
+ const bunkerMaterial = new THREE.MeshStandardMaterial({
+   color: 0xd9c18b,
+   roughness: 1
+ });
+
+ function addBunker(x, z, width, depth) {
+   const bunker = new THREE.Mesh(
+     new THREE.CircleGeometry(1, 32),
+     bunkerMaterial
+   );
+
+   bunker.scale.set(width, depth, 1);
+   bunker.rotation.x = -Math.PI / 2;
+   bunker.position.set(x, -0.045, z);
+   bunker.receiveShadow = true;
+   scene.add(bunker);
+ }
+
+ addBunker(-5.2, -16, 2.2, 1.15);
+ addBunker(5.2, -16, 2.2, 1.15);
+
     // Simple decorative trees
     for (let i = 0; i < 20; i++) {
       const side = i % 2 === 0 ? -1 : 1;
