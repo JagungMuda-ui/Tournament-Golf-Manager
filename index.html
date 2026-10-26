@@ -1,0 +1,190 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fantasy Golf Tournament</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f6f1;
+      color: #183c2b;
+    }
+    header {
+      background: #123c2b;
+      color: white;
+      padding: 28px 20px;
+    }
+    header h1 { margin: 0 0 8px; }
+    header p { margin: 0; color: #d7e7d9; }
+    main { max-width: 1000px; margin: auto; padding: 22px; }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .panel, .golfer {
+      background: white;
+      padding: 18px;
+      border-radius: 14px;
+      border: 1px solid #e0e8df;
+    }
+    .number { font-size: 28px; font-weight: bold; margin-top: 8px; }
+    .golfers {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .golfer h3 { margin: 8px 0; }
+    .muted { color: #66766b; font-size: 14px; }
+    .price { font-weight: bold; color: #98721c; }
+    button {
+      width: 100%;
+      border: 0;
+      padding: 11px;
+      border-radius: 8px;
+      background: #17643f;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 12px;
+    }
+    button:disabled { background: #9ca9a0; cursor: not-allowed; }
+    .selected { border: 2px solid #23955c; }
+    .notice { margin: 16px 0; min-height: 22px; }
+    .team-list { line-height: 1.9; }
+    @media (max-width: 550px) {
+      .summary { grid-template-columns: 1fr; }
+      main { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>⛳ Fantasy Golf</h1>
+    <p>Build your dream team. Manage your budget. Score points.</p>
+  </header>
+
+  <main>
+    <h2>My Fantasy Team</h2>
+    <p class="muted">Select up to 5 golfers within your 100-credit budget.</p>
+
+    <section class="summary">
+      <div class="panel">
+        <div class="muted">Golfers Selected</div>
+        <div class="number" id="count">0 / 5</div>
+      </div>
+      <div class="panel">
+        <div class="muted">Credits Remaining</div>
+        <div class="number" id="budget">100</div>
+      </div>
+      <div class="panel">
+        <div class="muted">Demo Fantasy Points</div>
+        <div class="number" id="points">0</div>
+      </div>
+    </section>
+
+    <h2>Choose Your Golfers</h2>
+    <p class="muted">Illustrative prices and points only—not live tournament data.</p>
+    <div class="golfers" id="golfers"></div>
+
+    <div class="panel" style="margin-top:22px">
+      <h2>My Team Selection</h2>
+      <div id="team" class="team-list">No golfers selected yet.</div>
+      <button id="reset">Reset Team</button>
+    </div>
+    <p id="notice" class="notice" role="status"></p>
+  </main>
+
+  <script>
+    const golfers = [
+      { name: "Scottie Scheffler", price: 30, points: 25 },
+      { name: "Rory McIlroy", price: 28, points: 22 },
+      { name: "Jon Rahm", price: 24, points: 18 },
+      { name: "Collin Morikawa", price: 20, points: 16 },
+      { name: "Tommy Fleetwood", price: 18, points: 15 },
+      { name: "Hideki Matsuyama", price: 17, points: 14 },
+      { name: "Justin Rose", price: 15, points: 12 },
+      { name: "Viktor Hovland", price: 22, points: 19 }
+    ];
+
+    const selected = new Set();
+    const LIMIT = 100;
+    const MAX_PLAYERS = 5;
+
+    const moneyUsed = () =>
+      golfers.filter(g => selected.has(g.name))
+        .reduce((sum, g) => sum + g.price, 0);
+
+    const totalPoints = () =>
+      golfers.filter(g => selected.has(g.name))
+        .reduce((sum, g) => sum + g.points, 0);
+
+    function render() {
+      document.getElementById("count").textContent =
+        `${selected.size} / ${MAX_PLAYERS}`;
+      document.getElementById("budget").textContent =
+        LIMIT - moneyUsed();
+      document.getElementById("points").textContent = totalPoints();
+
+      document.getElementById("golfers").innerHTML = golfers.map(g => {
+        const isSelected = selected.has(g.name);
+        const cannotAdd =
+          !isSelected &&
+          (selected.size >= MAX_PLAYERS ||
+           moneyUsed() + g.price > LIMIT);
+
+        return `
+          <article class="golfer ${isSelected ? "selected" : ""}">
+            <div class="muted">PRO GOLFER</div>
+            <h3>${g.name}</h3>
+            <p class="price">${g.price} credits</p>
+            <p>Demo points: ${g.points}</p>
+            <button data-name="${g.name}" ${cannotAdd ? "disabled" : ""}>
+              ${isSelected ? "Remove Golfer" : "Select Golfer"}
+            </button>
+          </article>`;
+      }).join("");
+
+      document.getElementById("team").innerHTML =
+        selected.size
+          ? golfers.filter(g => selected.has(g.name))
+              .map(g => `${g.name} — ${g.price} credits`).join("<br>")
+          : "No golfers selected yet.";
+
+      document.querySelectorAll("[data-name]").forEach(button => {
+        button.addEventListener("click", () => {
+          const name = button.dataset.name;
+          const golfer = golfers.find(g => g.name === name);
+
+          if (selected.has(name)) {
+            selected.delete(name);
+            document.getElementById("notice").textContent =
+              `${name} removed from your team.`;
+          } else if (selected.size < MAX_PLAYERS &&
+                     moneyUsed() + golfer.price <= LIMIT) {
+            selected.add(name);
+            document.getElementById("notice").textContent =
+              `${name} added to your team.`;
+          }
+
+          render();
+        });
+      });
+    }
+
+    document.getElementById("reset").addEventListener("click", () => {
+      selected.clear();
+      document.getElementById("notice").textContent =
+        "Your team has been reset.";
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
