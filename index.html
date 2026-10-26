@@ -530,10 +530,10 @@ document.getElementById("clubSelect").addEventListener("change", () => {
         camera.lookAt(
           ball.position.x,
           0,
-          ball.position.z - 5
+          ball.position.z - 12
         );
       } else {
-        const desired = new THREE.Vector3(0, 32, 2);
+        const desired = new THREE.Vector3(0, 27, 5);
         camera.position.lerp(desired, 0.08);
         camera.lookAt(0, 0, -7);
       }
